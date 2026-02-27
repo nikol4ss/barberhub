@@ -1,0 +1,59 @@
+# Node / PNPM
+node_modules/
+.pnpm-store/
+.pnpmfile.cjs
+pnpm-lock.yaml
+
+# Build outputs
+dist/
+build/
+.next/
+*.js.map
+*.d.ts
+
+# Turborepo / Caching
+node_modules/.cache/
+.turbo/
+
+# TypeScript
+*.tsbuildinfo
+
+# Logs
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+pnpm-debug.log*
+
+# Environment / Secrets
+.env
+.env.local
+.env.*.local
+.env.production
+.env.production.local
+.env.test
+
+# IDE / Editor
+.vscode/
+.idea/
+*.sublime-workspace
+*.sublime-project
+*.iml
+
+# OS / System
+.DS_Store
+Thumbs.db
+
+# Docker
+docker-compose.override.yml
+**/docker-compose.override.yml
+*.log
+
+# Testing / Coverage
+coverage/
+*.lcov
+
+# Misc / Temporary
+*.tmp
+*.swp
+*.bak
+*.old

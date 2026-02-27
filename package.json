@@ -1,0 +1,18 @@
+{
+  "name": "barberhub",
+  "version": "1.0.0",
+  "description": "BarberHub SaaS monorepo - client, server, and shared libraries",
+  "private": true,
+  "main": "index.js",
+  "scripts": {
+    "clean": "npx rimraf node_modules web/node_modules api/node_modules && pnpm store prune && pnpm cache clean && turbo prune --all"
+  },
+  "keywords": [],
+  "author": "@niko4ss",
+  "license": "ISC",
+  "packageManager": "pnpm@10.20.0",
+  "devDependencies": {
+    "turbo": "^2.8.11",
+    "typescript": "^5.9.3"
+  }
+}
