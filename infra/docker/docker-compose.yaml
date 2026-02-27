@@ -1,0 +1,28 @@
+version: "3.9"
+
+services:
+  db:
+    image: postgres:18
+    container_name: barberhub-db
+    restart: always
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: 2004
+      POSTGRES_DB: barberhub
+    volumes:
+      - db_data:/var/lib/postgresql
+    ports:
+      - "5433:5432"
+
+  redis:
+    image: redis:8
+    container_name: barberhub-redis
+    restart: always
+    ports:
+      - "6379:6379"
+    volumes:
+      - redis_data:/data
+
+volumes:
+  db_data:
+  redis_data:

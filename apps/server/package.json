@@ -1,0 +1,24 @@
+{
+  "name": "@barberhub/server",
+  "version": "0.0.1",
+  "description": "Fastify-based backend for BarberHub SaaS",
+  "type": "module",
+  "main": "index.js",
+  "scripts": {
+    "dev": "tsx watch src/server.ts"
+  },
+  "packageManager": "pnpm@10.20.0",
+  "dependencies": {
+    "dotenv": "^17.3.1",
+    "fastify": "^5.7.4",
+    "ioredis": "^5.10.0"
+  },
+  "devDependencies": {
+    "@prisma/client": "^7.4.1",
+    "@types/node": "^25.3.2",
+    "prisma": "^7.4.1",
+    "tsx": "^4.21.0",
+    "typescript": "^5.9.3",
+    "vitest": "^4.0.18"
+  }
+}

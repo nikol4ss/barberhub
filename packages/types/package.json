@@ -1,6 +1,7 @@
 {
   "name": "@barberhub/types",
   "version": "0.0.1",
+  "description": "Shared TypeScript types and interfaces across layers.",
   "main": "dist/index.js",
   "types": "dist/index.d.ts",
   "scripts": {
