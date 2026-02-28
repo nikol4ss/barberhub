@@ -57,3 +57,6 @@ coverage/
 *.swp
 *.bak
 *.old
+
+# Prisma
+generated

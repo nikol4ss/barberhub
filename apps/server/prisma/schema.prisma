@@ -1,8 +1,232 @@
 generator client {
   provider = "prisma-client"
-  output   = "../../../generated/prisma"
+  output   = "../generated/prisma"
 }
 
 datasource db {
   provider = "postgresql"
 }
+
+/// 4.3
+enum UserRole {
+  ADMIN
+  MANAGER
+  BARBER
+  ATTENDANT
+}
+
+/// 1.2
+enum Plan {
+  STARTER
+  PRO
+  BUSINESS
+}
+
+enum SubscriptionStatus {
+  TRIAL
+  ACTIVE
+  PAST_DUE
+  SUSPENDED
+  CANCELED
+}
+
+/// 2.2
+enum ClientTag {
+  NEW
+  FREQUENT
+  VIP
+  INACTIVE
+  BIRTHDAY
+}
+
+enum BillingCycle {
+  MONTHLY
+  ANNUAL
+}
+
+/// 5.3
+enum ModuleKey {
+  MODULO_AGENDAMENTO       // [Starter]
+  MODULO_CLIENTES          // [Starter]
+  MODULO_FINANCEIRO        // [Starter]
+  MODULO_PAGAMENTO_ONLINE  // [Pro]
+  MODULO_EQUIPE            // [Pro]
+  MODULO_DASHBOARD         // [Pro]
+  MODULO_FIDELIDADE        // [Pro]
+  MODULO_COMUNICACAO       // [Pro]
+  MODULO_PRODUTOS          // [Business]
+  MODULO_VENDA_BALCAO      // [Business]
+  MODULO_LOJA_ONLINE       // [Business]
+  MODULO_FORNECEDORES      // [Business]
+  MODULO_MULTI_UNIDADE     // [Business]
+  MODULO_FISCAL            // [Business]
+}
+
+model Tenant {
+  id        String   @id @default(uuid()) @db.Uuid
+  slug      String   @unique
+  name      String
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  // 4.2
+  logoUrl       String? @map("logo_url")
+  primaryColor  String  @default("#1a1a2e") @map("primary_color")
+  coverPhotoUrl String? @map("cover_photo_url")
+  description   String?
+
+  address     String?
+  phone       String?
+  instagram   String?
+  whatsapp    String?
+
+  cnpj              String? @unique
+  companyName       String? @map("company_name")
+  stateRegistration String? @map("state_registration")
+  taxRegime         String? @map("tax_regime")
+
+  users        User[]
+  clients      Client[]
+  featureFlags FeatureFlag[]
+  subscription Subscription?
+
+  @@map("tenants")
+}
+
+model User {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  name      String
+  email     String
+  phone     String?
+  avatarUrl String? @map("avatar_url")
+
+  role         UserRole
+  passwordHash String   @map("password_hash")
+  isActive     Boolean  @default(true) @map("is_active")
+
+  // 8.5
+  refreshTokenHash      String?   @map("refresh_token_hash")
+  refreshTokenExpiresAt DateTime? @map("refresh_token_expires_at")
+
+  lastLoginAt DateTime? @map("last_login_at")
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, email])
+  @@index([tenantId])
+  @@index([tenantId, isActive])
+  @@map("users")
+}
+
+// 3.2
+model Subscription {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @unique @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  plan   Plan
+  status SubscriptionStatus @default(TRIAL)
+
+  trialEndsAt    DateTime? @map("trial_ends_at")
+  currentPeriodStart DateTime? @map("current_period_start")
+  currentPeriodEnd   DateTime? @map("current_period_end")
+
+  gatewayCustomerId     String? @map("gateway_customer_id")
+  gatewaySubscriptionId String? @map("gateway_subscription_id")
+
+  lastWebhookAt DateTime? @map("last_webhook_at")
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+  @@map("subscriptions")
+}
+
+model FeatureFlag {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  moduleKey ModuleKey @map("module_key")
+  isEnabled Boolean   @default(false) @map("is_enabled")
+
+  enabledAt  DateTime? @map("enabled_at")
+  disabledAt DateTime? @map("disabled_at")
+
+  isOverride     Boolean @default(false) @map("is_override")
+  overrideReason String? @map("override_reason")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, moduleKey])
+  @@index([tenantId, isEnabled])
+  @@map("feature_flags")
+}
+
+
+model Client {
+  id        String   @id @default(uuid()) @db.Uuid
+  tenantId  String   @map("tenant_id") @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  // 2.2
+  name      String
+  phone     String
+  email     String?
+  avatarUrl String?   @map("avatar_url")
+  birthDate DateTime? @map("birth_date")
+
+  preferences Json? @default("{}")
+
+  // 2.2
+  tags          ClientTag[]
+  notes         String?
+
+  lastVisitAt   DateTime? @map("last_visit_at")
+  totalVisits   Int       @default(0) @map("total_visits")
+
+  loyaltyPoints Int @default(0) @map("loyalty_points")
+
+  ratingAverage Float? @map("rating_average")
+  ratingCount   Int    @default(0) @map("rating_count")
+
+  otpCode      String?   @map("otp_code")
+  otpExpiresAt DateTime? @map("otp_expires_at")
+
+  tenant Tenant @relation(fields: [tenantId], references: [id])
+
+  @@unique([tenantId, phone])
+  @@index([tenantId])
+  @@index([tenantId, lastVisitAt])
+  @@index([tenantId, birthDate])
+  @@map("clients")
+}
+
+model PlanConfig {
+  id        String   @id @default(uuid()) @db.Uuid
+  createdAt DateTime @default(now()) @map("created_at")
+  updatedAt DateTime @updatedAt       @map("updated_at")
+
+  plan         Plan
+  billingCycle BillingCycle @map("billing_cycle")
+
+  displayName  String  @map("display_name")
+  tagline      String?
+  featuresList Json    @default("[]") @map("features_list")
+
+  priceInCents  Int     @map("price_in_cents")
+  currency      String  @default("BRL")
+  isActive      Boolean @default(true) @map("is_active")
+
+  trialDays Int @default(7) @map("trial_days")
+
+  annualDiscountPercent Int? @map("annual_discount_percent")
+  gatewayPlanId String? @map("gateway_plan_id")
+
+  @@unique([plan, billingCycle])
+  @@map("plan_configs")
+}
+
