@@ -3,17 +3,6 @@ import jwt from "jsonwebtoken";
 import { FeatureFlagRepository } from "../repositories/feature-flag.repository";
 import { UserRepository } from "../repositories/user.repository";
 
-interface AccessTokenPayload {
-  userId: string;
-  tenantId: string;
-  role: string;
-}
-
-interface RefreshTokenPayload {
-  userId: string;
-  tenantId: string;
-}
-
 export class AuthService {
   constructor(
     private readonly userRepository: UserRepository,

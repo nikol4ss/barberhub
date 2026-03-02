@@ -9,7 +9,7 @@ import { SubscriptionRepository } from "../modules/identity/repositories/subscri
 import { TenantRepository } from "../modules/identity/repositories/tenant.repository";
 import { UserRepository } from "../modules/identity/repositories/user.repository";
 
-import { AuthService } from "../modules/identity/services/auth.services";
+import { AuthService } from "../modules/identity/services/auth.service";
 import { TenantService } from "../modules/identity/services/tenant.service";
 
 const redis = new Redis({

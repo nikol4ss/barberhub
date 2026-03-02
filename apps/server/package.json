@@ -4,6 +4,9 @@
   "description": "Fastify-based backend for BarberHub SaaS",
   "type": "module",
   "main": "index.js",
+  "engines": {
+    "node": ">=22.0.0"
+  },
   "scripts": {
     "dev": "tsx watch src/server.ts"
   },
@@ -13,21 +16,19 @@
     "@fastify/cookie": "^11.0.2",
     "@fastify/jwt": "^10.0.0",
     "@prisma/adapter-pg": "^7.4.2",
-    "awilix": "^13.0.1",
+    "@prisma/client": "^7.4.2",
+    "awilix": "^10.0.2",
     "bcryptjs": "^3.0.3",
     "dotenv": "^17.3.1",
     "fastify": "^5.7.4",
     "ioredis": "^5.10.0",
     "jsonwebtoken": "^9.0.3",
-    "pg": "^8.19.0",
     "zod": "^4.3.6"
   },
   "devDependencies": {
-    "@prisma/client": "^7.4.1",
     "@types/bcryptjs": "^3.0.0",
     "@types/jsonwebtoken": "^9.0.10",
-    "@types/node": "^25.3.2",
-    "@types/pg": "^8.16.0",
+    "@types/node": "^20.19.35",
     "prisma": "^7.4.1",
     "tsx": "^4.21.0",
     "typescript": "^5.9.3",
