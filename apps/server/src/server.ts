@@ -5,6 +5,7 @@ import fastifyJwt from "@fastify/jwt";
 import Fastify from "fastify";
 
 import { authRoutes } from "./modules/identity/routes/auth.routes";
+
 import { container } from "./shared/container";
 import { createFeatureFlagHook } from "./shared/hooks/feature-flag.hook";
 import { createTenantHook } from "./shared/hooks/tenant.hook";
@@ -32,6 +33,11 @@ const featureFlagHook = createFeatureFlagHook({
 server.decorate("featureFlagHook", featureFlagHook);
 
 await server.register(authRoutes, { prefix: "/auth" });
+
+server.addHook("preHandler", async (req, reply) => {
+  if (req.url.startsWith("/auth")) return;
+  return tenantHook(req, reply);
+});
 
 const start = async () => {
   try {

@@ -20,6 +20,7 @@ export class AuthService {
     }
 
     const passwordMatch = await bcrypt.compare(password, user.passwordHash);
+
     if (!passwordMatch) {
       throw new Error("Credenciais inválidas");
     }

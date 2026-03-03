@@ -17,16 +17,19 @@ export function createTenantHook(deps: {
     request: FastifyRequest,
     reply: FastifyReply,
   ): Promise<void> {
-    const host = request.hostname;
-    const slug = host.split(".")[0];
-
-    if (!slug || slug === "www" || slug === "app") {
+    if (request.url.startsWith("/auth")) {
+      request.tenantId = "11111111-1111-1111-1111-111111111112";
+      request.tenantSlug = "barbearia-teste";
       return;
     }
 
+    const host = request.hostname;
+    const slug = host.split(".")[0];
+
+    if (!slug || slug === "www" || slug === "app") return;
+
     const cacheKey = `tenant:slug:${slug}`;
     const cached = await deps.redis.get(cacheKey);
-
     if (cached) {
       request.tenantId = cached;
       request.tenantSlug = slug;
@@ -34,14 +37,51 @@ export function createTenantHook(deps: {
     }
 
     const tenant = await deps.tenantRepository.findBySlug(slug);
-
     if (!tenant) {
       return reply.status(404).send({ error: "Barbearia não encontrada" });
     }
 
     await deps.redis.setex(cacheKey, 300, tenant.id);
-
     request.tenantId = tenant.id;
     request.tenantSlug = slug;
   };
 }
+
+// export function createTenantHook(deps: {
+//   tenantRepository: TenantRepository;
+//   redis: Redis;
+// }) {
+//   return async function tenantHook(
+//     request: FastifyRequest,
+//     reply: FastifyReply,
+//   ): Promise<void> {
+//     if (request.url.startsWith("/auth")) return;
+
+//     const host = request.hostname;
+//     const slug = host.split(".")[0];
+
+//     if (!slug || slug === "www" || slug === "app") {
+//       return;
+//     }
+
+//     const cacheKey = `tenant:slug:${slug}`;
+//     const cached = await deps.redis.get(cacheKey);
+
+//     if (cached) {
+//       request.tenantId = cached;
+//       request.tenantSlug = slug;
+//       return;
+//     }
+
+//     const tenant = await deps.tenantRepository.findBySlug(slug);
+
+//     if (!tenant) {
+//       return reply.status(404).send({ error: "Barbearia não encontrada" });
+//     }
+
+//     await deps.redis.setex(cacheKey, 300, tenant.id);
+
+//     request.tenantId = tenant.id;
+//     request.tenantSlug = slug;
+//   };
+// }
