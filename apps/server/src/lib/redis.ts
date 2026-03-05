@@ -1,11 +1,20 @@
-import dotenv from "dotenv";
+import "dotenv/config";
 import Redis from "ioredis";
 
-dotenv.config();
+const host = process.env.REDIS_HOST;
+const port = Number(process.env.REDIS_PORT);
+
+if (!host) {
+  throw new Error("REDIS_HOST is not found.");
+}
+
+if (!port || Number.isNaN(port)) {
+  throw new Error("REDIS_PORT is not found.");
+}
 
 const redis = new Redis({
-  host: process.env.REDIS_HOST?.trim() || "127.0.0.1",
-  port: Number(process.env.REDIS_PORT) || 6379,
+  host: host.trim(),
+  port,
 });
 
 export default redis;

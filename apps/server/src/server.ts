@@ -2,52 +2,60 @@ import "dotenv/config";
 
 import fastifyCookie from "@fastify/cookie";
 import fastifyJwt from "@fastify/jwt";
-import Fastify from "fastify";
-
-import { authRoutes } from "./modules/identity/routes/auth.routes";
+import Fastify, { FastifyInstance } from "fastify";
 
 import { container } from "./shared/container";
+import { registerErrorHandler } from "./shared/hooks/error.hook";
 import { createFeatureFlagHook } from "./shared/hooks/feature-flag.hook";
 import { createTenantHook } from "./shared/hooks/tenant.hook";
 
-const server = Fastify({ logger: true });
+import { authRoutes } from "./modules/identity/routes/auth.routes";
 
-await server.register(fastifyJwt, {
-  secret: process.env.JWT_SECRET!,
-});
+function buildServer(): FastifyInstance {
+  const server = Fastify({ logger: true });
 
-await server.register(fastifyCookie, {
-  secret: process.env.COOKIE_SECRET!,
-});
+  const { tenantRepository, featureFlagRepository, redis } = container.cradle;
 
-const { tenantRepository, featureFlagRepository, redis } = container.cradle;
+  registerErrorHandler(server);
 
-const tenantHook = createTenantHook({ tenantRepository, redis });
-server.addHook("preHandler", tenantHook);
+  // Plugins
+  server.register(fastifyJwt, {
+    secret: process.env.JWT_SECRET as string,
+  });
 
-const featureFlagHook = createFeatureFlagHook({
-  featureFlagRepository,
-  redis,
-});
+  server.register(fastifyCookie, {
+    secret: process.env.COOKIE_SECRET as string,
+  });
 
-server.decorate("featureFlagHook", featureFlagHook);
+  // Hooks
+  const tenantHook = createTenantHook({ tenantRepository, redis });
 
-await server.register(authRoutes, { prefix: "/auth" });
+  const featureFlagHook = createFeatureFlagHook({
+    featureFlagRepository,
+    redis,
+  });
 
-server.addHook("preHandler", async (req, reply) => {
-  if (req.url.startsWith("/auth")) return;
-  return tenantHook(req, reply);
-});
+  server.register(async (app) => {
+    app.addHook("preHandler", tenantHook);
+  });
 
-const start = async () => {
+  server.decorate("featureFlagHook", featureFlagHook);
+
+  // Routes
+  server.register(authRoutes, { prefix: "/auth" });
+
+  return server;
+}
+
+async function start() {
+  const server = buildServer();
+
   try {
     await server.listen({ port: 3000 });
-    console.info("Server on: http://localhost:3000");
-  } catch (error: unknown) {
-    console.error("Server off: Error");
+  } catch (error) {
     server.log.error(error);
     process.exit(1);
   }
-};
+}
 
 start();
