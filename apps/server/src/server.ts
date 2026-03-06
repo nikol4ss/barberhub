@@ -1,4 +1,5 @@
 import "dotenv/config";
+console.log("DB:", process.env.DATABASE_URL);
 
 import fastifyCookie from "@fastify/cookie";
 import fastifyJwt from "@fastify/jwt";
@@ -29,15 +30,12 @@ function buildServer(): FastifyInstance {
 
   // Hooks
   const tenantHook = createTenantHook({ tenantRepository, redis });
-
   const featureFlagHook = createFeatureFlagHook({
     featureFlagRepository,
     redis,
   });
 
-  server.register(async (app) => {
-    app.addHook("preHandler", tenantHook);
-  });
+  server.addHook("preHandler", tenantHook);
 
   server.decorate("featureFlagHook", featureFlagHook);
 

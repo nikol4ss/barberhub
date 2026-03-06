@@ -1,4 +1,6 @@
 import { FastifyReply, FastifyRequest } from "fastify";
+
+import { AuthErrors } from "../errors/auth.error";
 import { loginSchema } from "../schemas/auth.schema";
 import { AuthService } from "../services/auth.service";
 
@@ -33,13 +35,7 @@ export class AuthController {
     const refreshToken = request.cookies.refreshToken;
 
     if (!refreshToken) {
-      return reply.code(401).send({
-        type: "BUSINESS_ERROR",
-        code: "REFRESH_TOKEN_MISSING",
-        message: "Refresh token ausente",
-        advice: "Faça login novamente.",
-        statusCode: 401,
-      });
+      throw AuthErrors.INVALID_REFRESH_TOKEN();
     }
 
     const userId = request.user.userId;
