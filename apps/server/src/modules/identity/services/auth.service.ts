@@ -1,5 +1,8 @@
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
+
+import { AuthErrors } from "../errors/auth.error";
+
 import { FeatureFlagRepository } from "../repositories/feature-flag.repository";
 import { UserRepository } from "../repositories/user.repository";
 
@@ -9,20 +12,20 @@ export class AuthService {
     private readonly featureFlagRepository: FeatureFlagRepository,
   ) {}
 
-  async login(email: string, password: string, tenantId: string) {
+  async authenticate(email: string, password: string, tenantId: string) {
     const user = await this.userRepository.findByEmailAndTenant(
       email,
       tenantId,
     );
 
     if (!user || !user.isActive) {
-      throw new Error("Credenciais inválidas");
+      throw AuthErrors.INVALID_CREDENTIALS();
     }
 
     const passwordMatch = await bcrypt.compare(password, user.passwordHash);
 
     if (!passwordMatch) {
-      throw new Error("Credenciais inválidas");
+      throw AuthErrors.INVALID_CREDENTIALS();
     }
 
     const { accessToken, refreshToken } = this.generateTokenPair({
@@ -62,19 +65,20 @@ export class AuthService {
     const user = await this.userRepository.findById(userId);
 
     if (!user || !user.refreshTokenHash || !user.refreshTokenExpiresAt) {
-      throw new Error("Refresh token inválido");
+      throw AuthErrors.INVALID_REFRESH_TOKEN();
     }
 
     if (user.refreshTokenExpiresAt < new Date()) {
-      throw new Error("Refresh token expirado");
+      throw AuthErrors.INVALID_REFRESH_TOKEN();
     }
 
     const tokenMatch = await bcrypt.compare(
       rawRefreshToken,
       user.refreshTokenHash,
     );
+
     if (!tokenMatch) {
-      throw new Error("Refresh token inválido");
+      throw AuthErrors.INVALID_REFRESH_TOKEN();
     }
 
     const { accessToken, refreshToken: newRefreshToken } =
@@ -93,7 +97,7 @@ export class AuthService {
     return { accessToken, refreshToken: newRefreshToken };
   }
 
-  async logout(userId: string) {
+  async revokeSession(userId: string) {
     await this.userRepository.clearRefreshToken(userId);
   }
 

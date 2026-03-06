@@ -4,6 +4,8 @@ import { prisma } from "../lib/prisma";
 
 import { EventBus } from "./events/event-bus";
 
+import { AuthController } from "../modules/identity/controllers/auth.controller";
+
 import { FeatureFlagRepository } from "../modules/identity/repositories/feature-flag.repository";
 import { SubscriptionRepository } from "../modules/identity/repositories/subscription.repository";
 import { TenantRepository } from "../modules/identity/repositories/tenant.repository";
@@ -18,6 +20,7 @@ const redis = new Redis({
 });
 
 export interface AppCradle {
+  prisma: typeof prisma;
   redis: Redis;
   eventBus: typeof EventBus;
 
@@ -27,6 +30,7 @@ export interface AppCradle {
   subscriptionRepository: SubscriptionRepository;
 
   authService: AuthService;
+  authController: AuthController;
   tenantService: TenantService;
 }
 
@@ -45,5 +49,6 @@ container.register({
   subscriptionRepository: asClass(SubscriptionRepository).singleton(),
 
   authService: asClass(AuthService).singleton(),
+  authController: asClass(AuthController).singleton(),
   tenantService: asClass(TenantService).singleton(),
 });

@@ -1,6 +1,7 @@
-import { ModuleKey } from "apps/server/generated/prisma/enums";
-import { FastifyReply, FastifyRequest } from "fastify";
 import { Redis } from "ioredis";
+import { FastifyReply, FastifyRequest } from "fastify";
+
+import { ModuleKey } from "apps/server/generated/prisma/enums";
 import { FeatureFlagRepository } from "../../modules/identity/repositories/feature-flag.repository";
 
   export function createFeatureFlagHook(deps: {
